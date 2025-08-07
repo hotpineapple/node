@@ -2,7 +2,7 @@ import * as common from '../common/index.mjs';
 import tmpdir from '../common/tmpdir.js';
 import { resolve, dirname, sep, relative, join, isAbsolute } from 'node:path';
 import { mkdir, writeFile, symlink, glob as asyncGlob } from 'node:fs/promises';
-import { glob, globSync, Dirent } from 'node:fs';
+import { glob, globSync, Dirent, writeFileSync } from 'node:fs';
 import { test, describe } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
@@ -517,4 +517,19 @@ describe('fsPromises glob - exclude', function() {
       assert.deepStrictEqual(actual.sort(), normalized);
     });
   }
+});
+
+describe('globSync - encoding', function() {
+  test('encoding: buffer', () => {
+    if (process.platform !== 'linux') {
+      common.skip('Non-UTF8 filename test only works on Linux');
+      return;
+    }
+    
+    const path = Buffer.from([0xe9]);
+    writeFileSync(path, 'hello');
+    
+    const actual = globSync('[^a-z]', { encoding: 'buffer' });
+    console.log(actual)
+  })
 });
